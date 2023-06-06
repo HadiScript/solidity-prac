@@ -1,0 +1,113 @@
+// >>>> Writing, VIEW and PURE Functions¶ *******************************************************************************************
+
+// So far, we have mostly interacted and modified state variables from our Smart Contract. For example, when we write the address, we modify a state variable. When we update an uint variable, we also modify the state.
+
+// For this, we needed to send a transaction. That works very transparently in Remix and also looks instantaneous and completely free of charge, but in reality it isn't. Modifying the State costs gas, is a concurrent operation that requires mining and doesn't return any values.
+
+// Reading values, on the other hand, is virtually free and doesn't require mining.
+
+// There are two types of reading functions:
+
+// view: Accessing state variables
+// pure: Not accessing state variables
+
+
+
+// >>>> A pure function is a function that neither writes, nor reads from state variables. It can only access its own arguments and other pure functions. Let me give you an example:
+
+
+//SPDX-License-Identifier: MIT
+
+// pragma solidity 0.8.15;
+
+// contract ExampleViewPure {
+
+//     uint public myStorageVariable;
+
+//     function getMyStorageVariable() public view returns(uint) {
+//         return myStorageVariable;
+//     }
+
+//     function getAddition(uint a, uint b) public pure returns(uint) {
+//         return a+b;
+//     }
+
+//     function setMyStorageVariable(uint _newVar) public returns(uint) {
+//         myStorageVariable = _newVar;
+//         return _newVar;
+//     }
+
+
+// }
+
+
+
+// >>>> SPDX-License-Identifier: MIT
+
+// pragma solidity 0.8.15;
+
+// contract ExampleViewPure {
+
+//     uint public myStorageVariable;
+
+//     function setMyStorageVariable(uint _newVar) public returns(uint) {
+//         myStorageVariable = _newVar;
+//         return _newVar;
+//     }
+
+
+// }
+// As you can see here, a writing function can have return variables, but they won't actually return anything to the transaction initializer. There are several reason for it, but the most prominent one is: at the time of sending the transaction the actual state is unknown. It is possible that someone sends a competing transaction that alters the state and from there it only depends on the transaction ordering - which is something that happens on the miner side. You will see that extensively in the next section.
+
+// What's the return variable for then?
+
+// It's for Smart Contract communication. It is used to return something when a smart contract calls another smart contract function.
+
+// How to return variables then in Solidity? With Events! Something we're talking about later on.
+
+
+
+// >>>> Payable *******************************************  
+// notes in sample.sol file
+
+
+// >>>> Receive and Fallback *******************************************  
+// notes in fallback.sol
+
+// So far, all we did, was to receive Ether through an explicit function call. But how can you actually send a plain eth transaction to a smart contract?
+
+// That is, through the receive function and/or through the fallback function.
+
+
+// receive() is a function that gets priority over fallback() when a calldata is empty. But fallback gets precedence over receive when calldata does not fit a valid function signature.
+
+
+// >>>> ASSERTIONS *******************************************  
+
+// Assert is used to check invariants. Those are states our contract or variables should never reach, ever. For example, if we decrease a value then it should never get bigger, only smaller.
+
+
+// That's only 1 Wei. Where is the rest? What happened? 🤔
+
+// We are storing the balance in an uint8. Unsigned integers go from 0 to 2^n-1, so that's 2^8-1 or 255. So, it can store a max of 255 Wei. We sent 257 Wei to the contract. It automatically rolls over to 0. So, we end up with 257 - 255 - 1 (the 0 value) = 1.
+
+// How can we fix it?
+
+// Well, the obvious way here is to increase the uint8 to a uint256. But that is only half the story, because even with large numbers it can roll over. Okay okay, the obvious way is to use Solidity 0.8. But bear with me, there are many internal states a contract should never reach. And the easiest to showcase here is with integers and rollovers.
+
+
+// >>>> TRYCATCH *******************************************  
+
+// There is a new concept in Solidity since Solidity 0.6, which allows for basic try/catch inside a Smart Contract. Before that you had to use constructs like address.call (which we will do later in the course as well). But here I quickly want to give you a hint of what's possible now with Error handling.
+
+
+// >>>> Event *******************************************  
+// used for return values from transections
+// used externally to trigger functionality
+// used as a cheap data storage
+
+// writing transections canot return values
+
+
+// >>>> Iheritance, modifier, ...************************  
+// in video
